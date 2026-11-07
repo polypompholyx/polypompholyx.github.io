@@ -1,0 +1,4 @@
+---
+title: plague
+slug: plague
+---

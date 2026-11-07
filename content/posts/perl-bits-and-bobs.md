@@ -1,0 +1,227 @@
+---
+title: Bits and bobs
+date: '2012-10-04T14:20:56Z'
+lastmod: '2013-04-12T10:34:20Z'
+url: /2012/10/perl-bits-and-bobs/
+slug: perl-bits-and-bobs
+draft: false
+wp_id: 456
+categories:
+- Perl
+---
+
+This post is a bit of a rag-bag of useful stuff that doesn't fit elsewhere.  
+
+## Creating code at runtime
+
+  
+There's another way of creating code on the fly, [besides closures](/2012/10/perl-refs-data-structures/ "References and data structures"). This is `eval`. `eval` comes in two flavours: string and block. The block `eval` looks like:  
+
+```perl
+$number = <STDIN>;
+my $answer;
+eval {
+    $answer = 2 / $number;
+};
+print $@ ? "Divide by zero error or similar: $@" : $answer;
+```
+
+  
+This is a useful (and indeed the only way) to catch exceptions, that is, divide-by-zero errors and their ilk. Note you need a `;` at the end of the `eval { BLOCK };` because `eval` is a statement. If something goes wrong in the block, the special variable `$@` is set with what went wrong. So `eval`-ling a block allows you to *test* Perl code, and make fatal things non-fatal.
+
+If you actually want to *create* new code on the fly, you can use string `eval`:  
+
+```perl
+my $name = <STDIN>;
+eval "sub $name { return \"hello\" } ";
+```
+
+  
+This will create a subroutine on the fly called `$name` that returns 'hello', which you can then call normally. The string is quoted, and the usual rules for double quoted string interpolation apply. `eval` is very powerful (*i.e.* dangerous), which you should be aware of before you even think of using it:  
+
+```perl
+my $cmd = <STDIN>;
+eval $cmd;
+```
+
+  
+is going to get you in an awful lot of trouble if someone types in  
+
+``` input
+system("rm -rf *")
+```
+
+  
+on Unix, or  
+
+``` input
+system("DELTREE c:\\windows")
+```
+
+  
+if you're on Windows. Beware.  
+
+## What's the time Mr Wolf?
+
+  
+\$time = scalar( localtime );  
+
+```perl
+print $time;
+```
+
+  
+`localtime` returns the local time in an array, type `perldoc -f localtime` on a command line for details. The commonest way of using it though, is calling it in scalar context, which returns a useful descriptive string.  
+
+## Bed-time
+
+  
+
+```perl
+sleep 1;
+```
+
+  
+makes perl `sleep` for 1 second (ish: subject to some iffiness).  
+
+## Time to get up
+
+  
+
+```perl
+print "\a";
+```
+
+  
+`\a` is an annoying alarm beep.  
+
+## Pretty printing
+
+  
+Perl has two functions for this, `printf` and `sprintf`. Both use the same syntax, but `printf` actually prints the prettified string, whereas `sprintf` just returns it, so you can store the prettified version elsewhere, *e.g.* in a variable. The format is a very complex: `perldoc -f sprintf` for the gory details.
+
+`printf` takes at least two arguments. The first is a control string, the second is the string to prettify. Control strings contain placeholders that start with `%`. They end with a letter that indicates the format you want: `f` is a fixed decimal floating point number. `e` is a scientific notation float, `s` is a vanilla string, and `u` is an unsigned (no + or −) integer, and so on. Between the `%` and the letter can come some bits and bobs to specify the format you want your string in. If you put a number in, it specifies the minimum field width. If you put a `-` in between, it means left justify, so:  
+
+```perl
+my $string1 = "carrots";
+my $string2 = "beans";
+printf(
+    "%-10s neatly lined up\n%-10s neatly lined up too",
+     $string1,              $string2
+);
+```
+
+  
+
+```text
+carrots   neatly lined up
+beans     neatly lined up too
+```
+
+  
+See that the `%-10s` in the control string act like place-holders for the list of strings that follow. You can format your code nicely so that its readers will know which placeholder refers to which string.
+
+Another useful one is:  
+
+```perl
+my $string = "1.23465326362643743657563";
+printf( "%.3f", $string );
+```
+
+  
+
+```text
+1.235
+```
+
+  
+A `.` *followed* by a number indicates a maximum number of decimal places. Incidentally, if you need to print a literal `%` character in a control string, you'll need to escape it, like this: `%%`. I won't cover them here, but another way of messing with strings is using the `pack` and `unpack` operators, which allow you to convert between strings (like "100") and (for example) their binary equivalent (*i.e.* the actual 8-bit binary string 00000100). `perldoc -f pack` for the details.  
+
+## Loop control
+
+  
+If you have a bunch of loops nested in each other:  
+
+```perl
+while ( <$FILE> ) {
+    while ( my $word = split /\s+/, $_ )     {
+        print "$word" unless $word =~ /^do_not_print_me$/i;
+    }
+}
+```
+
+  
+You'll often want to abort one or other of them prematurely. For this you'll want `next` and `last`. Both drop you out of the current innermost loop: `next` skips any remaining code, and restarts the loops with the next value, whilst `last` kills the innermost loop dead. In this case `next` will move onto the next `$word`, whilst `last` will ignore the rest of the `$word`s generated by `split` :  
+
+```perl
+while ( <$FILE> ) {
+    while ( my $word = split /\s+/, $_ ) {
+        next if $word =~ /^#/;
+            # ignore any 'word' starting with a #
+        last if $word =~ /^END_OF_LINE$/;
+            # ignore the rest of the words in the line
+        print $word;
+    }
+}
+```
+
+  
+The problem with this is that maybe you want to drop out of the outer loop if you find something in the inner loop. To do this, you can use labels. For example, if you were trying to parse a Perl file (not a good idea: the only thing that can parse Perl code properly is the `perl` interpreter), you might try something like this:  
+
+```perl
+LINE: while ( <$FILE> ) {
+    WORD: while ( my $word = split /\s+/, $_ ) {
+        next LINE if $word =~ /^#/;
+            # ignore the rest of the line, it's only a comment
+        last LINE if $word =~ /^__END__$/;
+            # ignore the rest of the lines if you find Perl's __END__ token
+        next WORD if $word =~ /rude/;
+            # don't print anything rude
+        print $word;
+    }
+}
+```
+
+  
+The `LABEL:`s allow you to jump out of a loop from any depth. The much deprecated `goto LABEL` allows you to jump to anywhere in the code, but now I've told you about it, forget about it, there is a whole world of hurt there. There's also `redo` which makes for the simplest loop possible:  
+
+```perl
+LOOP: {
+    print "Hello. Did you know you can kill a perl program with Control-C\n";
+    redo LOOP;
+}
+```
+
+  
+This sort of loop seems to be looked down upon, but I've found it useful from time to time.  
+
+## Heredocs
+
+  
+Heredocs are a way of including a large block of text in a Perl script without having to quote it line by line:  
+
+```perl
+my $name = "Stewie Griffin";
+print <<"THIS";
+Hello,
+This is a double quoted heredoc, as you can see from the fact that the
+THIS is written with double quotes. This means you can interpolate  variables
+like $name. If you use single quotes around the THIS, the heredoc follows
+single-quote rules. There is one thing different: you no longer need to escape
+"quotes" like in a normal quoted string. This is because the end of the string
+is terminated by the THIS label, so quotes don't mean anything special.
+The THIS label must be on a line on its own, up against the margin, like
+THIS
+
+$string = <<'HERE';
+This also works: you can assign a heredoc to a string. The token HERE is
+single-quoted so $name will not interpolate.
+HERE
+
+print $string;
+```
+
+  
+I generally prefer to use large descriptive tokens like `__MESSAGE_BODY__` as they stand out better.
+
+Next up...[installing modules](/2012/10/perl-install-modules/ "Installing modules").

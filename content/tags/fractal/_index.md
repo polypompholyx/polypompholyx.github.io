@@ -1,0 +1,4 @@
+---
+title: fractal
+slug: fractal
+---

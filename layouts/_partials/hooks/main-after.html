@@ -1,0 +1,6 @@
+{{/* Sidebar widgets underneath content on every page except the home page (which has a real sidebar). */}}
+{{ if not .IsHome }}
+<aside class="pp-widgets-row" aria-label="Sidebar">
+  {{ partial "pp-widgets.html" . }}
+</aside>
+{{ end }}

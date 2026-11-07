@@ -1,0 +1,4 @@
+---
+title: Maspalomas
+slug: maspalomas
+---

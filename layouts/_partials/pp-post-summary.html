@@ -1,0 +1,21 @@
+{{/* One post teaser: date badge, title, byline, excerpt, tags, comment count. Context: a Page. */}}
+<article class="pp-post">
+  <div class="pp-date" aria-hidden="true">
+    <span class="pp-date-m">{{ .Date.Format "Jan" }}</span>
+    <span class="pp-date-d">{{ .Date.Format "02" }}</span>
+  </div>
+  <h2 class="pp-title"><a href="{{ .RelPermalink }}" title="Permalink to {{ .Title }}">{{ .Title }}</a></h2>
+  <p class="pp-meta">
+    By {{ site.Params.author }}
+    {{ with .GetTerms "categories" }}in {{ range $i, $c := . }}{{ if $i }}, {{ end }}<a href="{{ $c.RelPermalink }}">{{ $c.Title }}</a>{{ end }}{{ end }}
+    &middot; <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2 January 2006" }}</time>
+  </p>
+  <div class="pp-excerpt">
+    <p>{{ .Plain | truncate 420 }}</p>
+    <p><a class="pp-more" href="{{ .RelPermalink }}">Read more &rarr;</a></p>
+  </div>
+  <p class="pp-foot">
+    {{ with .GetTerms "tags" }}<span class="pp-tags">{{ range $i, $t := . }}{{ if $i }}, {{ end }}<a href="{{ $t.RelPermalink }}">{{ $t.Title }}</a>{{ end }}</span>{{ end }}
+    {{ with .Params.wp_comments }}<a class="pp-ccount" href="{{ $.RelPermalink }}#comments">{{ len . }} comment{{ if ne (len .) 1 }}s{{ end }}</a>{{ end }}
+  </p>
+</article>

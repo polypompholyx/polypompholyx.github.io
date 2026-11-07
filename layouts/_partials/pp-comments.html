@@ -1,0 +1,19 @@
+{{/* Archived WordPress comments, stored in front matter as `wp_comments`. Read-only. */}}
+{{ with .Params.wp_comments }}
+<section class="pp-comments" id="comments">
+  <h2>{{ len . }} comment{{ if ne (len .) 1 }}s{{ end }}</h2>
+  <ol class="pp-comment-list">
+    {{ range . }}
+    <li class="pp-comment pp-depth-{{ .depth }}{{ if eq .kind "pingback" }} pp-pingback{{ end }}" id="comment-{{ .id }}">
+      <div class="pp-comment-meta">
+        <strong>{{ if .url }}<a href="{{ .url }}" rel="nofollow ugc">{{ .author }}</a>{{ else }}{{ .author }}{{ end }}</strong>
+        {{ if eq .kind "pingback" }}(pingback){{ end }}
+        <time datetime="{{ .date }}">{{ (time.AsTime .date).Format "2 January 2006" }}</time>
+      </div>
+      <div class="pp-comment-body">{{ .html | safeHTML }}</div>
+    </li>
+    {{ end }}
+  </ol>
+  <p class="pp-note">Comments on the old WordPress site have been archived here; new comments are not enabled.</p>
+</section>
+{{ end }}

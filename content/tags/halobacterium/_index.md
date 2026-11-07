@@ -1,0 +1,4 @@
+---
+title: Halobacterium
+slug: halobacterium
+---

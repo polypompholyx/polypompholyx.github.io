@@ -1,0 +1,4 @@
+---
+title: primitive
+slug: primitive
+---

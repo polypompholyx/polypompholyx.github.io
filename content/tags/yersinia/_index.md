@@ -1,0 +1,4 @@
+---
+title: Yersinia
+slug: yersinia
+---

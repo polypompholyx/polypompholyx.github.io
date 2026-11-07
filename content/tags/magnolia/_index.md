@@ -1,0 +1,4 @@
+---
+title: magnolia
+slug: magnolia
+---

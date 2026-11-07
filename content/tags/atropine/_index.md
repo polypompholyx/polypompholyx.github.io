@@ -1,0 +1,4 @@
+---
+title: atropine
+slug: atropine
+---

@@ -1,0 +1,4 @@
+---
+title: kinetics
+slug: kinetics
+---

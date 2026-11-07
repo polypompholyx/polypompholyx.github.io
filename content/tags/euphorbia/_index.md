@@ -1,0 +1,4 @@
+---
+title: Euphorbia
+slug: euphorbia
+---

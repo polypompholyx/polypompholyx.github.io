@@ -1,0 +1,6 @@
+{{/* Header banner image above the navigation bar, as on the Graphene-themed WordPress site. */}}
+{{ with site.Params.banner_image }}
+<div class="pp-banner">
+  <a href="{{ "/" | relURL }}"><img src="{{ . | relURL }}" alt="{{ site.Title }}"></a>
+</div>
+{{ end }}

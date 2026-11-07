@@ -1,0 +1,4 @@
+---
+title: lignin
+slug: lignin
+---

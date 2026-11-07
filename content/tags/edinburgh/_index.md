@@ -1,0 +1,4 @@
+---
+title: Edinburgh
+slug: edinburgh
+---

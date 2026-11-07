@@ -1,0 +1,4 @@
+---
+title: mantis
+slug: mantis
+---

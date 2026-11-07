@@ -1,0 +1,360 @@
+"""This module can be used to convert a mark-down text file format for 
+phylogenies into a Clustal-style dendrogram files, a Wikipedia {{clade}} tree,
+or back to canonicalised markdown.
+
+Mark-down
+=========
+
+The markdown format simple a tab-indented list of lists::
+
+	-Embryophyta
+		-Liverworts
+		-_____
+			-_____
+				-Hornworts
+				-Tracheophytes
+					Euphyllophytes
+						-Spermatophytes
+							-Gymnosperms
+							-Angiosperms
+						-Ferns
+					Lycopods
+			-Mosses
+
+Node names can include can include only letters, numbers, underscores,
+the space character, an '†' to indicate extinct nodes, and a '*' to indicate
+paraphyletic groups (if you must!) The dashes before each name are optional.
+Unnamed internal nodes must be noted in the markdown using underscore
+characters (5 are shown above, but you can use any number).
+
+Output formats of script
+========================
+
+* Passing ``-f nwk`` as an option to the script will return a Newick tree.
+  This format does not necesarily support internal node labels, but
+  they can be included in some extended Newick formats by appending the
+  internal node label to its equivalent closing bracket::
+
+	((Liverworts,((Hornworts,(((Gymnosperms,Angiosperms)Spermatophytes,Ferns)Euphyllophytes,Lycopods)Tracheophytes),Mosses))Embryophyta);
+
+
+* Passing ``-f nwkstrict`` as an option to the script will return a Newick tree
+  with no internal node labels::
+
+	((Liverworts,((Hornworts,(((Gymnosperms,Angiosperms),Ferns),Lycopods)),Mosses)));
+
+* Passing ``-f wp`` as an option to the script will return Wikipedia markup 
+  format using the {{clade}} template::
+
+	{{clade
+		|label1=Embryophyta
+		|1={{clade
+			|1=Liverworts
+			|2={{clade
+				|1={{clade
+					|1=Hornworts
+					|label2=Tracheophytes
+					|2={{clade
+						|label1=Euphyllophytes
+						|1={{clade
+							|label1=Spermatophytes
+							|1={{clade
+								|1=Gymnosperms
+								|2=Angiosperms
+							}}
+							|2=Ferns
+						}}
+						|2=Lycopods
+					}}
+				}}
+				|2=Mosses
+			}}
+		}}
+	}}
+
+
+* Passing ``-f md`` as an option to the script will return a canonicalised
+  version of the markdown, with leading hyphens and five-underscore
+  placeholders::
+
+	-Embryophyta
+		-Liverworts
+		-_____
+			-_____
+				-Hornworts
+				-Tracheophytes
+					-Euphyllophytes
+						-Spermatophytes
+							-Gymnosperms
+							-Angiosperms
+						-Ferns
+					-Lycopods
+			-Mosses
+
+Module
+======
+
+For use as a module, you just need::
+	
+	from parse_phylogeny import phylo
+	filename = 'plant_phylogeny.txt'
+	format = 'nwk' # or nwkstrict, md, wp
+	formatted_output = phylo(filename, format)
+	print(formatted_output)
+
+Script
+======
+
+usage: parse_phylogeny.py [-h] [-f [format]] [filename]
+
+Generate phylogeny formats from markdown.
+
+positional arguments:
+  filename     file containing simple phylogeny markdown
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -f [format]  specify output format as nwk, nwkstrict, md or wp (default: nwk)
+	
+License
+=======
+			
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <http://www.gnu.org/licenses/>.
+"""
+
+__version__ = '1.2.0'
+__author__ = 'Steve Cook <steve@polypompholyx.com>'
+
+import argparse, re, os.path
+
+class Node:
+	"""Internal node of parse tree"""
+	def __init__(self, name):
+		self.name = name
+
+class Terminal:
+	"""Terminal node of parse tree"""
+	def __init__(self, name):
+		self.name = name
+
+
+def tokenise(filename):
+	"""Yield a token string from a markdown file as a generator"""
+	depth = 0
+	tokens = re.compile(u'^(\t*)(?:[-])?\s*([\w \u2020\*\.]+)') # include dagger and asterisk
+	
+	with open(filename, 'r', encoding='utf-8') as phylogeny:
+		linenum = 0
+		for line in phylogeny:
+			linenum += 1
+			match  = tokens.search(line)
+			if not match:
+				raise Exception('Invalid markdown: not an acceptable node label at line {linenum} near {line}'.format(
+					linenum=str(linenum), line=line))
+			indent = len(match.group(1))
+			name   = match.group(2)
+			name = name.rstrip()
+			if re.match('^-?\s*_+$', name):
+				name = ''
+			if indent == depth:
+				yield(name)
+			elif indent == depth + 1:
+				depth += 1
+				yield('(')
+				yield(name)
+			elif indent < depth:
+				while indent < depth:
+					depth -= 1
+					yield(')')
+				yield(name)
+			else:
+				raise Exception('Invalid markdown: Cannot indent more than one level at a time at line {linenum} near {line}'.format(
+					linenum=str(linenum), line=line))
+	while depth > 0:
+		yield(')') # indented file has 'virtual' dedents at EOF
+		depth -= 1
+
+
+def parse(filename):
+	"""Construct a parse tree from a token stream"""
+	depth = 0
+	stack = []
+	stream = tokenise(filename)
+	for token in stream:
+		if token == '(':
+			depth += 1
+			terminal = stack.pop()
+			node = Node(terminal.name)
+			stack.append(node)
+		elif token == ')':
+			depth -= 1
+			items = []
+			while type(stack[-1]) is not Node:
+				items.append(stack.pop())
+			items.append(stack.pop())
+			stack.append(items[::-1]) # reverse the order
+		else:
+			terminal = Terminal(token)
+			stack.append(terminal)
+	return(stack)
+
+
+def nwk(tree, **kwargs):
+	"""Recursively walk a parse tree, serialising it to a nwk string:
+	nwk_serialise(tree, strict=True) will strip internal node labels, 
+	nwk_serialise(tree, strict=False) will retain them"""
+	nwk_serialised = '('
+	strict = kwargs['strict']
+	node_names = []
+	def nwk_recurse(tree, nwk_serialised, strict):
+		for item in tree:
+			if type(item) is Terminal:
+				nwk_serialised = nwk_serialised + item.name + ','
+			elif type(item) is Node:
+				node_names.append( item.name )
+				nwk_serialised = nwk_serialised + '('
+			elif type(item) is list:
+				nwk_serialised = nwk_recurse(item, nwk_serialised, strict)
+				if nwk_serialised[-1] == ',':
+					nwk_serialised = nwk_serialised[:-1]
+					# remove any trailing comma
+				if strict is True:
+					nwk_serialised = nwk_serialised + ')' + ','
+				else:
+					nwk_serialised = nwk_serialised + ')' + node_names.pop() + ','
+		return(nwk_serialised)
+	nwk_serialised = nwk_recurse(tree, nwk_serialised, strict)
+	if nwk_serialised[-1] == ',':
+		nwk_serialised = nwk_serialised[:-1] # remove any trailing comma
+	nwk_serialised = nwk_serialised + ');'
+	return nwk_serialised
+
+
+def wp(tree):
+	"""Recursively walk a parse tree, serialising it to a wiki clade string"""
+	wp_serialised = '{{clade\n' # opening parenthesis
+	indent = 0 # current pretty-print tab-indent level
+	def wp_recurse(tree, wp_serialised, indent):
+		i = 0
+		for item in tree:
+			if type(item) is Terminal:
+				i += 1
+				wp_serialised = wp_serialised + '{tabs}|{num}={name}\n'.format(
+					tabs=('\t'*(indent+1)), num=str(i), name=item.name)
+			elif type(item) is Node:
+				if not item.name:
+					pass 
+				else:
+					# backtrack to convert the clade just added to a labelled one 
+					matches = re.search(r'\|(\d+)=\{\{clade\n$', wp_serialised)
+					n = int(matches.group(1))
+					wp_serialised = re.sub(r'\|(\d+)=\{\{clade\n$', '', wp_serialised)
+					wp_serialised = wp_serialised + '|label{labelnum}={name}\n{tabs}|{num}={{{{clade\n'.format(
+						labelnum=str(n), name=item.name, tabs=('\t'*indent), num=str(n))
+			elif type(item) is list:
+				i += 1
+				indent += 1
+				wp_serialised = wp_serialised + '{tabs}|{num}={{{{clade\n'.format(
+					tabs=('\t'*indent), num=str(i))
+				wp_serialised, indent = wp_recurse(item, wp_serialised, indent)
+				wp_serialised = wp_serialised + '{tabs}}}}}\n'.format(
+					tabs=('\t'*indent))
+				indent -= 1
+		return(wp_serialised, indent)
+	wp_serialised, indent = wp_recurse(tree, wp_serialised, indent)
+	wp_serialised = wp_serialised + '}}\n' # closing parenthesis
+	return wp_serialised
+
+def md(tree):
+	"""Recursively walk a parse tree, serialising it to a markdown string"""
+	md_serialised = ''
+	indent = -1 # current pretty-print tab-indent level
+	def md_recurse(tree, md_serialised, indent):
+		for item in tree:
+			if type(item) is Terminal:
+				md_serialised = md_serialised + '{tabs}-{name}\n'.format(
+					tabs=('\t'*(indent+1)), name=item.name)
+			elif type(item) is Node:
+				if not item.name:
+					md_serialised = md_serialised + '{tabs}-_____\n'.format(
+						tabs=('\t'*(indent)))
+					# canonicalise anonymous internals nodes to 5 underscores 
+				else:
+					md_serialised = md_serialised + '{tabs}-{name}\n'.format(
+						tabs=('\t'*indent), name=item.name)
+			elif type(item) is list:
+				indent += 1
+				md_serialised, indent = md_recurse(item, md_serialised, indent)
+				indent -= 1
+		return(md_serialised, indent)
+	md_serialised, indent = md_recurse(tree, md_serialised, indent)
+	md_serialised = re.sub(r'\n+$', '', md_serialised) # prune trailing newlines
+	return md_serialised
+
+
+def xml(tree,filename):
+	xml_serialised = '<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.phyloxml.org" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd">\n'
+	xml_serialised = xml_serialised + '<phylogeny rooted="true">\n'
+	xml_serialised = xml_serialised + '<name>{name}</name>\n'.format(name=os.path.basename(filename))
+	xml_serialised = xml_serialised + '<description>Autogenerated phyloXML generated from mark-down</description>\n'
+	indent = -1 # current pretty-print tab-indent level
+	def xml_recurse(tree, xml_serialised, indent):
+		for item in tree:
+			if type(item) is Terminal:
+				xml_serialised = xml_serialised + '{tabs}<clade><name>{name}</name></clade>\n'.format(
+					tabs=('\t'*(indent+1)), name=item.name)
+			elif type(item) is Node:
+				if item.name:
+					xml_serialised = xml_serialised + '{tabs}<clade><name>{name}</name>\n'.format(
+						tabs=('\t'*indent), name=item.name)
+				else:
+					xml_serialised = xml_serialised + '{tabs}<clade>\n'.format(
+						tabs=('\t'*indent))
+			elif type(item) is list:
+				indent += 1
+				xml_serialised, indent = xml_recurse(item, xml_serialised, indent)
+				xml_serialised = xml_serialised + '{tabs}</clade>\n'.format(
+						tabs=('\t'*indent))
+				indent -= 1
+		return(xml_serialised, indent)
+	xml_serialised, indent = xml_recurse(tree, xml_serialised, indent)
+	xml_serialised = xml_serialised + '</phylogeny>\n</phyloxml>\n'
+	return xml_serialised
+
+def phylo(filename, format):
+	"""Process markdown in filename, and return output formatted as nwk, nwkstrict, wp or md"""
+	if format == 'nwk':
+		return(nwk(parse(filename), strict=False))
+	elif format == 'nwkstrict':
+		return(nwk(parse(filename), strict=True))
+	elif format == 'wp':
+		return(wp(parse(filename)))
+	elif format == 'md':
+		return(md(parse(filename)))
+	elif format == 'xml':
+		return(xml(parse(filename),filename))
+	else:
+		raise Exception('Invalid output format: only nwk, nwkstrict, md, wp and xml are supported')
+
+
+if __name__ == '__main__':
+	argparser = argparse.ArgumentParser(description='Generate phylogeny formats from markdown.')
+	argparser.add_argument('filename', metavar='filename', type=str, nargs='?', 
+		help='file containing simple phylogeny markdown')
+	argparser.add_argument('-f', metavar='format', type=str, nargs='?',
+		default='nwk', help='specify output format as nwk, nwkstrict, md or wp (default: nwk)')
+	args = vars(argparser.parse_args())
+	if not os.path.isfile(args['filename']):
+		raise Exception('Invalid input file: must specify an input file that exists')
+
+	print(phylo(args['filename'], args['f']))

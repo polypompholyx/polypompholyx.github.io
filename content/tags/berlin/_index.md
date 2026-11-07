@@ -1,0 +1,4 @@
+---
+title: Berlin
+slug: berlin
+---

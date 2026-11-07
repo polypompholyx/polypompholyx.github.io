@@ -1,0 +1,4 @@
+---
+title: teleology
+slug: teleology
+---

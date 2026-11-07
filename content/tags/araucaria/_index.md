@@ -1,0 +1,4 @@
+---
+title: Araucaria
+slug: araucaria
+---

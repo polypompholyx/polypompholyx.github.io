@@ -1,0 +1,4 @@
+---
+title: Vasates
+slug: vasates
+---

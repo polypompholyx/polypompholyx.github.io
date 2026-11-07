@@ -1,0 +1,11 @@
+<div class="pp-license">
+  <p>
+    Except where otherwise noted, content on this site is licensed under a
+    <a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons License</a>
+    CC-BY-SA-3.0 Steve Cook
+  </p>
+  <p>
+    {{ with site.Home.OutputFormats.Get "rss" }}<a href="{{ .RelPermalink }}">RSS</a>{{ end }}
+    {{ with site.Params.instagram }}&middot; <a href="{{ . }}" rel="me">Instagram</a>{{ end }}
+  </p>
+</div>

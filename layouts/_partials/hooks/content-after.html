@@ -1,0 +1,7 @@
+{{/* Runs after the article body on every single page (not on the home page or lists). */}}
+{{ if and (not .IsHome) (eq .Kind "page") }}
+  {{ with .GetTerms "categories" }}
+  <p class="pp-postcats">Posted in {{ range $i, $c := . }}{{ if $i }}, {{ end }}<a href="{{ $c.RelPermalink }}">{{ $c.Title }}</a>{{ end }}</p>
+  {{ end }}
+  {{ partial "pp-comments.html" . }}
+{{ end }}

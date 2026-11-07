@@ -1,0 +1,4 @@
+---
+title: plants
+slug: plants
+---

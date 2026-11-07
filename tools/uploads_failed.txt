@@ -1,0 +1,5 @@
+ERR 'ascii' codec can't encode character '\xd7' in position 41: ordinal not in range(128)	https://www.polypompholyx.com/wp-content/uploads/2015/08/Magnolia_×soulangeana_fruit-225x300.jpg
+ERR 'ascii' codec can't encode character '\xd7' in position 41: ordinal not in range(128)	https://www.polypompholyx.com/wp-content/uploads/2015/08/Magnolia_×soulangeana_fruit.jpg
+ERR 'ascii' codec can't encode character '\xd7' in position 38: ordinal not in range(128)	https://www.polypompholyx.com/wp-content/uploads/2016/01/Pinus_×_holfordiana-207x300.jpg
+ERR 'ascii' codec can't encode character '\xd7' in position 38: ordinal not in range(128)	https://www.polypompholyx.com/wp-content/uploads/2016/01/Pinus_×_holfordiana.jpg
+ERR The read operation timed out	https://www.polypompholyx.com/wp-content/uploads/2019/01/Barbican_glasshouse.jpg

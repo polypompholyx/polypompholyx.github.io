@@ -1,0 +1,8 @@
+{{/* Context: a Paginator. */}}
+{{ if gt .TotalPages 1 }}
+<nav class="pp-pager" aria-label="Pagination">
+  {{ if .HasPrev }}<a class="pp-pager-prev" href="{{ .Prev.URL }}" rel="prev">&larr; Newer posts</a>{{ else }}<span></span>{{ end }}
+  <span class="pp-pager-pos">Page {{ .PageNumber }} of {{ .TotalPages }}</span>
+  {{ if .HasNext }}<a class="pp-pager-next" href="{{ .Next.URL }}" rel="next">Older posts &rarr;</a>{{ else }}<span></span>{{ end }}
+</nav>
+{{ end }}

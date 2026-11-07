@@ -1,0 +1,18 @@
+{{/* Blog-style front page, modelled on the Graphene theme the WordPress site used.
+     Only the "main" block is overridden; Ananke supplies the header, footer and <head>. */}}
+{{ define "main" }}
+{{ $posts := where site.RegularPages "Section" "posts" }}
+{{ $pag := .Paginate $posts }}
+<div class="pp-wrap">
+  <div class="pp-main">
+    {{ with .Content }}<div class="pp-intro">{{ . }}</div>{{ end }}
+    {{ range $pag.Pages }}
+      {{ partial "pp-post-summary.html" . }}
+    {{ end }}
+    {{ partial "pp-pager.html" $pag }}
+  </div>
+  <aside class="pp-sidebar" aria-label="Sidebar">
+    {{ partial "pp-widgets.html" . }}
+  </aside>
+</div>
+{{ end }}

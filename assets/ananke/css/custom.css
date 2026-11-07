@@ -1,0 +1,157 @@
+/* =========================================================================
+   Polypompholyx - look & feel modelled on the Graphene theme used by the
+   original WordPress site: header banner image above a dark nav bar, light
+   grey page, white post panels with a small date badge, right-hand sidebar.
+   Adjust the variables below to tune colours without touching anything else.
+   ========================================================================= */
+:root {
+  --pp-page:    #e3e3e3;   /* page background           */
+  --pp-panel:   #ffffff;   /* post / sidebar panels     */
+  --pp-border:  #cfcfcf;
+  --pp-text:    #222222;
+  --pp-muted:   #6b6b6b;
+  --pp-link:    #1b6aa5;
+  --pp-link-h:  #0b3d63;
+  --pp-bar:     #1f2a30;   /* navigation bar            */
+  --pp-accent:  #2f6b3a;   /* date badge / widget titles (plant green) */
+  --pp-width:   1040px;
+}
+
+body {
+  background: var(--pp-page) !important;
+  color: var(--pp-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+}
+a { color: var(--pp-link); }
+a:hover, a:focus { color: var(--pp-link-h); }
+
+/* ---- Header banner + navigation bar ----------------------------------- */
+.pp-banner { background: #000; line-height: 0; text-align: center; }
+.pp-banner img {
+  display: block; width: 100%; max-width: var(--pp-width);
+  height: auto; max-height: 220px; margin: 0 auto; object-fit: cover;
+}
+header .bg-black, header nav { background: var(--pp-bar) !important; }
+
+/* ---- Layout: content + sidebar ---------------------------------------- */
+.pp-wrap {
+  display: flex; flex-wrap: wrap; gap: 1.25rem;
+  max-width: var(--pp-width); margin: 1.25rem auto; padding: 0 1rem;
+}
+.pp-main    { flex: 1 1 560px; min-width: 0; }
+.pp-sidebar { flex: 0 0 260px; }
+@media (max-width: 860px) { .pp-sidebar { flex-basis: 100%; } }
+
+.pp-intro { margin-bottom: 1rem; }
+
+/* ---- Post teasers on the home page ------------------------------------ */
+.pp-post {
+  position: relative; background: var(--pp-panel);
+  border: 1px solid var(--pp-border); border-radius: 3px;
+  margin: 0 0 1.25rem; padding: 1rem 1.25rem 0.75rem 5rem;
+}
+.pp-date {
+  position: absolute; left: 1rem; top: 1rem; width: 3rem; text-align: center;
+  background: var(--pp-accent); color: #fff; border-radius: 3px; line-height: 1.1;
+  padding: 0.35rem 0;
+}
+.pp-date-m { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: .05em; }
+.pp-date-d { display: block; font-size: 1.35rem; font-weight: 700; }
+.pp-title  { margin: 0 0 0.25rem; font-size: 1.5rem; line-height: 1.25; }
+.pp-title a { text-decoration: none; }
+.pp-title a:hover { text-decoration: underline; }
+.pp-meta   { margin: 0 0 0.75rem; font-size: 0.85rem; color: var(--pp-muted); }
+.pp-excerpt p { margin: 0 0 0.6rem; }
+.pp-foot   { margin: 0.5rem 0 0; padding-top: 0.5rem; border-top: 1px solid #eee;
+             font-size: 0.85rem; color: var(--pp-muted); display: flex; justify-content: space-between; gap: 1rem; }
+.pp-more   { font-weight: 600; }
+@media (max-width: 520px) {
+  .pp-post { padding-left: 1.25rem; padding-top: 4rem; }
+}
+
+/* ---- Pagination -------------------------------------------------------- */
+.pp-pager {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--pp-panel); border: 1px solid var(--pp-border);
+  border-radius: 3px; padding: 0.6rem 1rem; font-size: 0.9rem;
+}
+.pp-pager-pos { color: var(--pp-muted); }
+
+/* ---- Sidebar widgets --------------------------------------------------- */
+.pp-widget {
+  background: var(--pp-panel); border: 1px solid var(--pp-border);
+  border-radius: 3px; margin: 0 0 1.25rem; padding: 0.75rem 1rem;
+}
+.pp-widget h3 {
+  margin: 0 0 0.5rem; padding-bottom: 0.35rem; font-size: 1rem;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--pp-accent);
+  border-bottom: 2px solid var(--pp-accent);
+}
+.pp-widget ul { list-style: none; margin: 0; padding: 0; }
+.pp-widget li { padding: 0.2rem 0; border-bottom: 1px dotted #ddd; font-size: 0.9rem; }
+.pp-widget li:last-child { border-bottom: 0; }
+.pp-count { color: var(--pp-muted); font-size: 0.8rem; }
+
+/* On non-home pages the widgets sit in a row under the content */
+.pp-widgets-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;
+  max-width: var(--pp-width); margin: 2rem auto 0; padding: 0 1rem;
+}
+.pp-widgets-row .pp-widget { margin: 0; }
+
+/* ---- Single posts / pages (Ananke's own article markup) ---------------- */
+main > article {
+  background: var(--pp-panel); border: 1px solid var(--pp-border);
+  border-radius: 3px; max-width: var(--pp-width); margin: 1.25rem auto;
+}
+main img, main video { max-width: 100%; height: auto; }
+main article p, main article li { line-height: 1.65; }
+main article h2, main article h3 { margin-top: 1.6em; }
+main article pre {
+  background: #f6f6f4; border: 1px solid #e2e2de; border-radius: 3px;
+  padding: 0.75rem 1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.45;
+}
+main article code { font-size: 0.9em; }
+main article blockquote {
+  margin: 1rem 0; padding: 0.25rem 1rem; color: #444;
+  border-left: 4px solid var(--pp-accent); background: #f7f9f7;
+}
+main article table { border-collapse: collapse; max-width: 100%; display: block; overflow-x: auto; }
+main article th, main article td { border: 1px solid var(--pp-border); padding: 0.3rem 0.6rem; }
+
+/* Image + caption blocks migrated from WordPress [caption] shortcodes */
+figure.wp-caption { margin: 1rem auto; text-align: center; max-width: 100%; }
+figure.wp-caption img { display: block; margin: 0 auto; }
+figure.wp-caption figcaption {
+  font-size: 0.85rem; color: var(--pp-muted); padding: 0.35rem 0.25rem 0; line-height: 1.4;
+}
+@media (min-width: 700px) {
+  figure.wp-caption.alignleft  { float: left;  margin: 0.25rem 1.25rem 0.75rem 0; }
+  figure.wp-caption.alignright { float: right; margin: 0.25rem 0 0.75rem 1.25rem; }
+}
+main article::after { content: ""; display: table; clear: both; }
+
+.pp-postcats { margin-top: 2rem; font-size: 0.9rem; color: var(--pp-muted); }
+
+/* ---- Archived comments -------------------------------------------------- */
+.pp-comments { margin-top: 2.5rem; padding-top: 1rem; border-top: 3px solid var(--pp-accent); }
+.pp-comments h2 { margin-top: 0; font-size: 1.3rem; }
+.pp-comment-list { list-style: none; margin: 0; padding: 0; }
+.pp-comment { padding: 0.75rem 0 0.75rem 0; border-bottom: 1px solid #eee; }
+.pp-comment-meta { font-size: 0.85rem; color: var(--pp-muted); margin-bottom: 0.25rem; }
+.pp-comment-meta strong { color: var(--pp-text); }
+.pp-comment-body p { margin: 0.3rem 0; }
+.pp-depth-1 { margin-left: 1.5rem; }
+.pp-depth-2 { margin-left: 3rem; }
+.pp-depth-3 { margin-left: 4.5rem; }
+.pp-depth-4 { margin-left: 6rem; }
+.pp-pingback .pp-comment-body { font-size: 0.9rem; color: var(--pp-muted); }
+.pp-note { margin-top: 1rem; font-size: 0.85rem; color: var(--pp-muted); font-style: italic; }
+
+/* ---- Footer licence line ------------------------------------------------ */
+.pp-license { max-width: var(--pp-width); margin: 2rem auto 0; padding: 0 1rem; font-size: 0.85rem; color: var(--pp-muted); text-align: center; }
+.pp-license p { margin: 0.25rem 0; }
+
+/* Maths (KaTeX) */
+.math { white-space: nowrap; }

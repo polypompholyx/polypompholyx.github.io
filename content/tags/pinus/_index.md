@@ -1,0 +1,4 @@
+---
+title: Pinus
+slug: pinus
+---

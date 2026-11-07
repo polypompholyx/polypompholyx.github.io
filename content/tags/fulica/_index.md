@@ -1,0 +1,4 @@
+---
+title: Fulica
+slug: fulica
+---

@@ -1,0 +1,8 @@
+{{/* All posts grouped by month; anchors are #YYYY-MM so the sidebar archive links work. */}}
+{{ range (where site.RegularPages "Section" "posts").GroupByDate "2006-01" }}
+  {{ $first := index .Pages 0 }}
+  <h2 id="{{ .Key }}">{{ $first.Date.Format "January 2006" }}</h2>
+  <ul>
+    {{ range .Pages }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a> <small>({{ .Date.Format "2 Jan" }})</small></li>{{ end }}
+  </ul>
+{{ end }}

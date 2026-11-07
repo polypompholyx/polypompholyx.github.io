@@ -1,0 +1,4 @@
+---
+title: icosahedron
+slug: icosahedron
+---
