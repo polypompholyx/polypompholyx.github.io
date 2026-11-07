@@ -80,3 +80,7 @@ summaryLength  = 60
   [[params.blogroll]]
     name = 'Alex Lomas'
     url  = 'http://www.alexlomas.com/blog/'
+
+[caches]
+  [caches.images]
+    dir = ':cacheDir/images'
